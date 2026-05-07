@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Trek;
+use App\Models\User;
+use Illuminate\Http\Request;
+
+abstract class ApiController extends Controller
+{
+    protected function authenticate(Request $request): User
+    {
+        $token = $request->bearerToken();
+
+        if (! $token) {
+            abort(response()->json(['message' => 'Authorization token required.'], 401));
+        }
+
+        $user = User::where('api_token', hash('sha256', $token))->first();
+
+        if (! $user) {
+            abort(response()->json(['message' => 'Invalid authorization token.'], 401));
+        }
+
+        return $user;
+    }
+
+    protected function authorizeOwner(User $user, Trek $trek): void
+    {
+        if ($trek->user_id !== $user->id) {
+            abort(response()->json(['message' => 'This resource does not belong to you.'], 403));
+        }
+    }
+}
