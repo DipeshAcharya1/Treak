@@ -73,4 +73,21 @@ class AuthController extends ApiController
 
         return response()->json(['message' => 'Logged out successfully.']);
     }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $this->authenticate($request);
+
+        $data = $request->validate([
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+        ]);
+
+        $user->update($data);
+
+        return response()->json([
+            'user' => $user->only(['id', 'name', 'email']),
+            'message' => 'Profile updated successfully.',
+        ]);
+    }
 }
