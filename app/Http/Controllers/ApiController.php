@@ -13,13 +13,13 @@ abstract class ApiController extends Controller
         $token = $request->bearerToken();
 
         if (! $token) {
-            abort(response()->json(['message' => 'Authorization token required.'], 401));
+            abort(401, 'Authorization token required.');
         }
 
-        $user = User::where('api_token', hash('sha256', $token))->first();
+        $user = User::where('api_token', '=', hash('sha256', $token))->first();
 
         if (! $user) {
-            abort(response()->json(['message' => 'Invalid authorization token.'], 401));
+            abort(401, 'Invalid authorization token.');
         }
 
         return $user;

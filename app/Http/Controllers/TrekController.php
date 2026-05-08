@@ -72,7 +72,7 @@ class TrekController extends ApiController
             $this->authorizeOwner($user, $trek);
         }
 
-        $trek->delete();
+        $trek->forceDelete();
 
         return response()->json(['message' => 'Trek deleted successfully.']);
     }

@@ -22,14 +22,13 @@ class AdminMiddleware
             return response()->json(['message' => 'Authorization token required.'], 401);
         }
 
-        $user = User::where('api_token', hash('sha256', $token))->first();
+        $user = User::where('api_token', '=', hash('sha256', $token))->first();
 
         if (! $user || ! $user->isAdmin()) {
             return response()->json(['message' => 'Admin access required.'], 403);
         }
 
         $request->setUserResolver(fn () => $user);
-        auth()->setUser($user);
 
         return $next($request);
     }
