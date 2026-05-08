@@ -44,6 +44,15 @@ All API endpoints except registration and health check require Bearer token auth
 
 Tokens are obtained via login/registration and are valid until logout.
 
+## Roles
+
+The system supports two user roles:
+
+- **user**: Can manage their own treks only
+- **admin**: Can manage all treks and access admin-only endpoints
+
+Admins are identified by the `role` field in the user record.
+
 ## API Endpoints
 
 ### Health Check
@@ -165,11 +174,35 @@ Tokens are obtained via login/registration and are valid until logout.
     }
     ```
 
+### List All Users (Admin Only)
+
+- **Method**: GET
+- **URL**: `/api/users`
+- **Description**: Get all users (admin only)
+- **Authentication**: Required (Bearer token, admin role)
+- **Response**:
+    ```json
+    [
+        {
+            "id": 1,
+            "name": "Test User",
+            "email": "test@example.com",
+            "role": "user"
+        },
+        {
+            "id": 2,
+            "name": "Admin User",
+            "email": "admin@example.com",
+            "role": "admin"
+        }
+    ]
+    ```
+
 ### List Treks
 
 - **Method**: GET
 - **URL**: `/api/treks`
-- **Description**: Get all treks for the authenticated user
+- **Description**: Get all treks for the authenticated user (admins see all treks)
 - **Authentication**: Required (Bearer token)
 - **Response**:
     ```json
@@ -311,6 +344,7 @@ Tokens are obtained via login/registration and are valid until logout.
 - `name`: string
 - `email`: string (unique)
 - `password`: string (hashed)
+- `role`: enum ('user', 'admin') (default: 'user')
 - `api_token`: string (nullable, hashed)
 - `created_at`: timestamp
 - `updated_at`: timestamp
@@ -327,15 +361,22 @@ Tokens are obtained via login/registration and are valid until logout.
 
 ## Testing
 
-Use tools like Postman or curl to test the endpoints. A demo user is seeded:
+Use tools like Postman or curl to test the endpoints. Demo users are seeded:
+
+**Regular User:**
 
 - Email: `test@example.com`
 - Password: `password`
+
+**Admin User:**
+
+- Email: `admin@example.com`
+- Password: `admin123`
 
 Example curl command:
 
 ```bash
 curl -X POST http://localhost:8000/api/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password"}'
+  -d '{"email":"admin@example.com","password":"admin123"}'
 ```

@@ -24,6 +24,18 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Test User',
                 'password' => bcrypt('password'),
                 'api_token' => hash('sha256', $token),
+                'role' => 'user',
+            ]
+        );
+
+        $adminToken = Str::random(60);
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('admin123'),
+                'api_token' => hash('sha256', $adminToken),
+                'role' => 'admin',
             ]
         );
 

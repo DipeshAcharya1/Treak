@@ -12,6 +12,10 @@ class TrekController extends ApiController
     {
         $user = $this->authenticate($request);
 
+        if ($user->isAdmin()) {
+            return response()->json(Trek::all());
+        }
+
         return response()->json($user->treks()->get());
     }
 
@@ -33,7 +37,10 @@ class TrekController extends ApiController
     public function show(Request $request, Trek $trek): JsonResponse
     {
         $user = $this->authenticate($request);
-        $this->authorizeOwner($user, $trek);
+
+        if (! $user->isAdmin()) {
+            $this->authorizeOwner($user, $trek);
+        }
 
         return response()->json($trek);
     }
@@ -41,7 +48,10 @@ class TrekController extends ApiController
     public function update(Request $request, Trek $trek): JsonResponse
     {
         $user = $this->authenticate($request);
-        $this->authorizeOwner($user, $trek);
+
+        if (! $user->isAdmin()) {
+            $this->authorizeOwner($user, $trek);
+        }
 
         $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
@@ -57,7 +67,10 @@ class TrekController extends ApiController
     public function destroy(Request $request, Trek $trek): JsonResponse
     {
         $user = $this->authenticate($request);
-        $this->authorizeOwner($user, $trek);
+
+        if (! $user->isAdmin()) {
+            $this->authorizeOwner($user, $trek);
+        }
 
         $trek->delete();
 

@@ -90,4 +90,15 @@ class AuthController extends ApiController
             'message' => 'Profile updated successfully.',
         ]);
     }
+
+    public function listUsers(Request $request): JsonResponse
+    {
+        $user = $this->authenticate($request);
+
+        if (! $user->isAdmin()) {
+            return response()->json(['message' => 'Admin access required.'], 403);
+        }
+
+        return response()->json(User::all());
+    }
 }
