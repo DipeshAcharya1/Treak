@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,11 +16,20 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        $token = $request->bearerToken();
+
+        if (! $token) {
+            return response()->json(['message' => 'Authorization token required.'], 401);
+        }
+
+        $user = User::where('api_token', hash('sha256', $token))->first();
 
         if (! $user || ! $user->isAdmin()) {
             return response()->json(['message' => 'Admin access required.'], 403);
         }
+
+        $request->setUserResolver(fn () => $user);
+        auth()->setUser($user);
 
         return $next($request);
     }
