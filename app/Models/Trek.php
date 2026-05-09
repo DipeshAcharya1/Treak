@@ -14,6 +14,12 @@ class Trek extends Model
         'title',
         'description',
         'date',
+        'price',
+        'duration_days',
+        'difficulty',
+        'location',
+        'image_url',
+        'max_altitude',
     ];
 
     protected $casts = [
@@ -23,5 +29,30 @@ class Trek extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function itineraries()
+    {
+        return $this->hasMany(Itinerary::class);
+    }
+
+    public function guides()
+    {
+        return $this->belongsToMany(Guide::class);
+    }
+
+    public function vehicles()
+    {
+        return $this->belongsToMany(Vehicle::class);
     }
 }

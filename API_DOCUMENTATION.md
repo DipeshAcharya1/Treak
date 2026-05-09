@@ -282,6 +282,107 @@ Admins are identified by the `role` field in the user record.
     }
     ```
 
+### Bookings
+
+#### List Bookings
+- **Method**: GET
+- **URL**: `/api/bookings`
+- **Description**: Get all bookings for the authenticated user
+- **Authentication**: Required (Bearer token)
+
+#### Create Booking
+- **Method**: POST
+- **URL**: `/api/bookings`
+- **Description**: Create a booking for a specific trek
+- **Authentication**: Required (Bearer token)
+- **Request Body**:
+    ```json
+    {
+        "trek_id": 1,
+        "booking_date": "2026-06-01",
+        "number_of_people": 2,
+        "total_price": 500.00
+    }
+    ```
+
+#### Cancel Booking
+- **Method**: PUT
+- **URL**: `/api/bookings/{booking}/cancel`
+- **Description**: Cancel a specific booking
+- **Authentication**: Required (Bearer token)
+
+### Reviews
+
+#### List Trek Reviews
+- **Method**: GET
+- **URL**: `/api/treks/{trek}/reviews`
+- **Description**: Get all reviews for a specific trek
+- **Authentication**: Required (Bearer token)
+
+#### Add Review
+- **Method**: POST
+- **URL**: `/api/reviews`
+- **Description**: Add a new review to a trek
+- **Authentication**: Required (Bearer token)
+- **Request Body**:
+    ```json
+    {
+        "trek_id": 1,
+        "rating": 5,
+        "comment": "Amazing experience!"
+    }
+    ```
+
+### Itineraries
+
+#### List Trek Itinerary
+- **Method**: GET
+- **URL**: `/api/treks/{trek}/itineraries`
+- **Description**: Get day-by-day itinerary for a specific trek
+- **Authentication**: Required (Bearer token)
+
+#### Add Itinerary
+- **Method**: POST
+- **URL**: `/api/treks/{trek}/itineraries`
+- **Description**: Add a new day itinerary to a trek
+- **Authentication**: Required (Bearer token)
+- **Request Body**:
+    ```json
+    {
+        "day_number": 1,
+        "title": "Arrival and Briefing",
+        "description": "Meet the guide and get briefed about the trek."
+    }
+    ```
+
+### Guides
+
+#### List Guides
+- **Method**: GET
+- **URL**: `/api/guides`
+- **Description**: Get all available guides
+- **Authentication**: Required (Bearer token)
+
+#### Create Guide
+- **Method**: POST
+- **URL**: `/api/guides`
+- **Description**: Add a new guide
+- **Authentication**: Required (Bearer token)
+
+### Vehicles
+
+#### List Vehicles
+- **Method**: GET
+- **URL**: `/api/vehicles`
+- **Description**: Get all available vehicles
+- **Authentication**: Required (Bearer token)
+
+#### Create Vehicle
+- **Method**: POST
+- **URL**: `/api/vehicles`
+- **Description**: Add a new vehicle
+- **Authentication**: Required (Bearer token)
+
 ## Error Handling
 
 ### Common Error Responses
@@ -356,6 +457,67 @@ Admins are identified by the `role` field in the user record.
 - `title`: string
 - `description`: text (nullable)
 - `date`: date (nullable)
+- `price`: decimal (nullable)
+- `duration_days`: integer (nullable)
+- `difficulty`: enum ('easy', 'moderate', 'difficult') (nullable)
+- `location`: string (nullable)
+- `image_url`: string (nullable)
+- `max_altitude`: integer (nullable)
+- `created_at`: timestamp
+- `updated_at`: timestamp
+
+### Booking
+
+- `id`: integer (primary key)
+- `user_id`: integer (foreign key to users)
+- `trek_id`: integer (foreign key to treks)
+- `booking_date`: date
+- `number_of_people`: integer (default: 1)
+- `total_price`: decimal
+- `status`: enum ('pending', 'confirmed', 'cancelled') (default: 'pending')
+- `created_at`: timestamp
+- `updated_at`: timestamp
+
+### Review
+
+- `id`: integer (primary key)
+- `user_id`: integer (foreign key to users)
+- `trek_id`: integer (foreign key to treks)
+- `rating`: integer (1 to 5)
+- `comment`: text (nullable)
+- `created_at`: timestamp
+- `updated_at`: timestamp
+
+### Itinerary
+
+- `id`: integer (primary key)
+- `trek_id`: integer (foreign key to treks)
+- `day_number`: integer
+- `title`: string
+- `description`: text (nullable)
+- `created_at`: timestamp
+- `updated_at`: timestamp
+
+### Guide
+
+- `id`: integer (primary key)
+- `name`: string
+- `experience_years`: integer (default: 0)
+- `bio`: text (nullable)
+- `contact_number`: string (nullable)
+- `profile_image_url`: string (nullable)
+- `languages_spoken`: string (nullable)
+- `created_at`: timestamp
+- `updated_at`: timestamp
+
+### Vehicle
+
+- `id`: integer (primary key)
+- `type`: string
+- `capacity`: integer
+- `plate_number`: string (unique)
+- `driver_name`: string (nullable)
+- `driver_contact`: string (nullable)
 - `created_at`: timestamp
 - `updated_at`: timestamp
 

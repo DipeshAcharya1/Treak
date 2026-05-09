@@ -10,6 +10,9 @@ use Illuminate\Support\Str;
 
 class AuthController extends ApiController
 {
+    /**
+     * Register a new user and return an API token.
+     */
     public function register(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -34,6 +37,9 @@ class AuthController extends ApiController
         ], 201);
     }
 
+    /**
+     * Authenticate a user and return an API token.
+     */
     public function login(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -57,6 +63,9 @@ class AuthController extends ApiController
         ]);
     }
 
+    /**
+     * Get the currently authenticated user's profile.
+     */
     public function me(Request $request): JsonResponse
     {
         $user = $this->authenticate($request);
@@ -64,6 +73,9 @@ class AuthController extends ApiController
         return response()->json(['user' => $user->only(['id', 'name', 'email'])]);
     }
 
+    /**
+     * Invalidate the current user's API token.
+     */
     public function logout(Request $request): JsonResponse
     {
         $user = $this->authenticate($request);
@@ -74,6 +86,9 @@ class AuthController extends ApiController
         return response()->json(['message' => 'Logged out successfully.']);
     }
 
+    /**
+     * Update the authenticated user's profile (partial update allowed).
+     */
     public function updateProfile(Request $request): JsonResponse
     {
         $user = $this->authenticate($request);
@@ -91,14 +106,14 @@ class AuthController extends ApiController
         ]);
     }
 
+    /**
+     * List all users (admin only).
+     * Admin access is enforced by the 'admin' middleware on the route.
+     */
     public function listUsers(Request $request): JsonResponse
     {
-        $user = $this->authenticate($request);
+        $users = User::all(['id', 'name', 'email', 'role', 'created_at', 'updated_at']);
 
-        if (! $user->isAdmin()) {
-            return response()->json(['message' => 'Admin access required.'], 403);
-        }
-
-        return response()->json(User::all());
+        return response()->json($users);
     }
 }

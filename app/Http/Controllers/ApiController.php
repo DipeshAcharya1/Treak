@@ -8,23 +8,41 @@ use Illuminate\Http\Request;
 
 abstract class ApiController extends Controller
 {
+    /**
+     * Get the authenticated user from the request.
+     *
+     * Prefers the user set by ApiAuthMiddleware via setUserResolver().
+     * Falls back to manual token lookup for backwards compatibility.
+     */
     protected function authenticate(Request $request): User
     {
+        // Check if the middleware already resolved the user
+        $user = $request->user();
+
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        // Fallback: manual token authentication
         $token = $request->bearerToken();
 
         if (! $token) {
-            abort(401, 'Authorization token required.');
+            abort(response()->json(['message' => 'Authorization token required.'], 401));
         }
 
         $user = User::where('api_token', '=', hash('sha256', $token))->first();
 
         if (! $user) {
-            abort(401, 'Invalid authorization token.');
+            abort(response()->json(['message' => 'Invalid authorization token.'], 401));
         }
 
         return $user;
     }
 
+    /**
+     * Verify that the given user owns the given trek.
+     * Aborts with a 403 JSON response if ownership check fails.
+     */
     protected function authorizeOwner(User $user, Trek $trek): void
     {
         if ($trek->user_id !== $user->id) {

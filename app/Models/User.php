@@ -43,6 +43,16 @@ class User extends Authenticatable
         return $this->hasMany(Trek::class);
     }
 
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
