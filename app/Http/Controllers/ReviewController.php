@@ -20,9 +20,10 @@ class ReviewController extends ApiController
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string',
         ]);
-
         $review = $user->reviews()->create($validated);
         return response()->json($review, 201);
+    }
+
     public function listAll(Request $request)
     {
         $user = $this->authenticate($request);

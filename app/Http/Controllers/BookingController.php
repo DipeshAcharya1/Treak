@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Notifications\BookingConfirmed;
+use App\Notifications\BookingCancelled;
+use App\Notifications\NewBookingAdminAlert;
+use App\Models\User;
 
 class BookingController extends ApiController
 {
@@ -71,6 +75,19 @@ class BookingController extends ApiController
         }
 
         $booking = $user->bookings()->create($validated);
+        
+        // Load trek for notification details
+        $booking->load(['trek', 'user']);
+        
+        // Notify User
+        $user->notify(new BookingConfirmed($booking));
+        
+        // Notify Admins
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new NewBookingAdminAlert($booking));
+        }
+
         return response()->json($booking, 201);
     }
 
@@ -84,8 +101,12 @@ class BookingController extends ApiController
     public function cancel(Request $request, $id)
     {
         $user = $this->authenticate($request);
-        $booking = $user->bookings()->findOrFail($id);
+        $booking = $user->bookings()->with('trek')->findOrFail($id);
         $booking->update(['status' => 'cancelled']);
+        
+        // Notify User
+        $user->notify(new BookingCancelled($booking));
+        
         return response()->json(['message' => 'Booking cancelled successfully', 'booking' => $booking]);
     }
 
@@ -117,8 +138,18 @@ class BookingController extends ApiController
             'status' => 'required|in:pending,confirmed,cancelled'
         ]);
 
-        $booking = \App\Models\Booking::findOrFail($id);
+        $booking = \App\Models\Booking::with(['user', 'trek'])->findOrFail($id);
+        $oldStatus = $booking->status;
         $booking->update(['status' => $validated['status']]);
+
+        // Notify user if status changed to cancelled or confirmed
+        if ($oldStatus !== $validated['status']) {
+            if ($validated['status'] === 'confirmed') {
+                $booking->user->notify(new BookingConfirmed($booking));
+            } elseif ($validated['status'] === 'cancelled') {
+                $booking->user->notify(new BookingCancelled($booking));
+            }
+        }
 
         return response()->json(['message' => 'Booking status updated', 'booking' => $booking]);
     }
