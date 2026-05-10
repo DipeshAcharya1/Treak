@@ -16,7 +16,7 @@ class TrekController extends ApiController
         $user = $this->authenticate($request);
 
         if ($user->isAdmin()) {
-            return response()->json(Trek::with('user:id,name,email')->get());
+            return response()->json(Trek::with(['user:id,name,email', 'guides', 'vehicles'])->get());
         }
 
         return response()->json($user->treks()->get());
@@ -32,10 +32,27 @@ class TrekController extends ApiController
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'price' => ['required', 'numeric'],
+            'location' => ['nullable', 'string'],
+            'duration_days' => ['nullable', 'integer'],
+            'difficulty' => ['required', 'string', 'in:easy,moderate,difficult'],
+            'max_altitude' => ['nullable', 'integer'],
+            'image_url' => ['nullable', 'string', 'url'],
             'date' => ['nullable', 'date'],
+            'guide_ids' => ['nullable', 'array'],
+            'guide_ids.*' => ['exists:guides,id'],
+            'vehicle_ids' => ['nullable', 'array'],
+            'vehicle_ids.*' => ['exists:vehicles,id'],
         ]);
 
-        $trek = $user->treks()->create($data);
+        $trek = $user->treks()->create(collect($data)->except(['guide_ids', 'vehicle_ids'])->toArray());
+
+        if ($request->has('guide_ids')) {
+            $trek->guides()->sync($request->guide_ids);
+        }
+        if ($request->has('vehicle_ids')) {
+            $trek->vehicles()->sync($request->vehicle_ids);
+        }
 
         return response()->json($trek, 201);
     }
@@ -68,10 +85,27 @@ class TrekController extends ApiController
         $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'price' => ['sometimes', 'required', 'numeric'],
+            'location' => ['nullable', 'string'],
+            'duration_days' => ['nullable', 'integer'],
+            'difficulty' => ['sometimes', 'required', 'string', 'in:easy,moderate,difficult'],
+            'max_altitude' => ['nullable', 'integer'],
+            'image_url' => ['nullable', 'string', 'url'],
             'date' => ['nullable', 'date'],
+            'guide_ids' => ['nullable', 'array'],
+            'guide_ids.*' => ['exists:guides,id'],
+            'vehicle_ids' => ['nullable', 'array'],
+            'vehicle_ids.*' => ['exists:vehicles,id'],
         ]);
 
-        $trek->update($data);
+        $trek->update(collect($data)->except(['guide_ids', 'vehicle_ids'])->toArray());
+
+        if ($request->has('guide_ids')) {
+            $trek->guides()->sync($request->guide_ids);
+        }
+        if ($request->has('vehicle_ids')) {
+            $trek->vehicles()->sync($request->vehicle_ids);
+        }
 
         return response()->json($trek);
     }
@@ -90,5 +124,21 @@ class TrekController extends ApiController
         $trek->delete();
 
         return response()->json(['message' => 'Trek deleted successfully.']);
+    }
+
+    /**
+     * Public list of all treks for discovery.
+     */
+    public function listAll(): JsonResponse
+    {
+        return response()->json(Trek::with(['user:id,name', 'guides', 'vehicles'])->get());
+    }
+
+    /**
+     * Public details of a specific trek.
+     */
+    public function showPublic(Trek $trek): JsonResponse
+    {
+        return response()->json($trek->load(['itineraries', 'reviews.user:id,name', 'guides', 'vehicles']));
     }
 }

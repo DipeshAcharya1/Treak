@@ -3,17 +3,23 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
-class GuideController extends Controller
+class GuideController extends ApiController
 {
-    public function index()
+    public function index(Request $request): JsonResponse
     {
         $guides = \App\Models\Guide::all();
         return response()->json($guides);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
+        $user = $this->authenticate($request);
+        if (!$user->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'experience_years' => 'integer|min:0',
@@ -27,9 +33,22 @@ class GuideController extends Controller
         return response()->json($guide, 201);
     }
 
-    public function show($id)
+    public function show(Request $request, $id): JsonResponse
     {
         $guide = \App\Models\Guide::with('treks')->findOrFail($id);
         return response()->json($guide);
+    }
+
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        $user = $this->authenticate($request);
+        if (!$user->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $guide = \App\Models\Guide::findOrFail($id);
+        $guide->delete();
+
+        return response()->json(['message' => 'Guide deleted successfully']);
     }
 }

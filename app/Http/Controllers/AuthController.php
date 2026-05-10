@@ -32,7 +32,7 @@ class AuthController extends ApiController
         $user->save();
 
         return response()->json([
-            'user' => $user->only(['id', 'name', 'email']),
+            'user' => $user->only(['id', 'name', 'email', 'role']),
             'token' => $token,
         ], 201);
     }
@@ -58,7 +58,7 @@ class AuthController extends ApiController
         $user->save();
 
         return response()->json([
-            'user' => $user->only(['id', 'name', 'email']),
+            'user' => $user->only(['id', 'name', 'email', 'role']),
             'token' => $token,
         ]);
     }
@@ -70,7 +70,7 @@ class AuthController extends ApiController
     {
         $user = $this->authenticate($request);
 
-        return response()->json(['user' => $user->only(['id', 'name', 'email'])]);
+        return response()->json(['user' => $user->only(['id', 'name', 'email', 'role'])]);
     }
 
     /**
@@ -101,7 +101,7 @@ class AuthController extends ApiController
         $user->update($data);
 
         return response()->json([
-            'user' => $user->only(['id', 'name', 'email']),
+            'user' => $user->only(['id', 'name', 'email', 'role']),
             'message' => 'Profile updated successfully.',
         ]);
     }
@@ -115,5 +115,38 @@ class AuthController extends ApiController
         $users = User::all(['id', 'name', 'email', 'role', 'created_at', 'updated_at']);
 
         return response()->json($users);
+    }
+    /**
+     * Update a user (Admin only).
+     */
+    public function updateUser(Request $request, User $user): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'role' => ['sometimes', 'required', 'in:user,admin'],
+        ]);
+
+        $user->update($data);
+
+        return response()->json([
+            'user' => $user->only(['id', 'name', 'email', 'role', 'created_at', 'updated_at']),
+            'message' => 'User updated successfully.',
+        ]);
+    }
+
+    /**
+     * Delete a user (Admin only).
+     */
+    public function deleteUser(User $user): JsonResponse
+    {
+        // Optionally prevent admin from deleting themselves
+        if (request()->user() && request()->user()->id === $user->id) {
+            return response()->json(['message' => 'You cannot delete yourself.'], 403);
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted successfully.']);
     }
 }
