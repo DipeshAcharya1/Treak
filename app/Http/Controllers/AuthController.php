@@ -31,10 +31,10 @@ class AuthController extends ApiController
         $user->api_token = hash('sha256', $token);
         $user->save();
 
-        return response()->json([
+        return $this->successResponse([
             'user' => $user->only(['id', 'name', 'email', 'role']),
             'token' => $token,
-        ], 201);
+        ], 'Registration successful', 201);
     }
 
     /**
@@ -50,17 +50,17 @@ class AuthController extends ApiController
         $user = User::where('email', '=', $data['email'])->first();
 
         if (! $user || ! Hash::check($data['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid credentials.'], 401);
+            return $this->errorResponse('Invalid credentials.', 401);
         }
 
         $token = Str::random(60);
         $user->api_token = hash('sha256', $token);
         $user->save();
 
-        return response()->json([
+        return $this->successResponse([
             'user' => $user->only(['id', 'name', 'email', 'role']),
             'token' => $token,
-        ]);
+        ], 'Login successful');
     }
 
     /**
@@ -70,7 +70,7 @@ class AuthController extends ApiController
     {
         $user = $this->authenticate($request);
 
-        return response()->json(['user' => $user->only(['id', 'name', 'email', 'role'])]);
+        return $this->successResponse(['user' => $user->only(['id', 'name', 'email', 'role'])]);
     }
 
     /**
@@ -83,7 +83,7 @@ class AuthController extends ApiController
         $user->api_token = null;
         $user->save();
 
-        return response()->json(['message' => 'Logged out successfully.']);
+        return $this->successResponse(null, 'Logged out successfully.');
     }
 
     /**
@@ -100,10 +100,9 @@ class AuthController extends ApiController
 
         $user->update($data);
 
-        return response()->json([
+        return $this->successResponse([
             'user' => $user->only(['id', 'name', 'email', 'role']),
-            'message' => 'Profile updated successfully.',
-        ]);
+        ], 'Profile updated successfully.');
     }
 
     /**
@@ -114,7 +113,7 @@ class AuthController extends ApiController
     {
         $users = User::all(['id', 'name', 'email', 'role', 'created_at', 'updated_at']);
 
-        return response()->json($users);
+        return $this->successResponse($users);
     }
     /**
      * Update a user (Admin only).
@@ -129,10 +128,9 @@ class AuthController extends ApiController
 
         $user->update($data);
 
-        return response()->json([
+        return $this->successResponse([
             'user' => $user->only(['id', 'name', 'email', 'role', 'created_at', 'updated_at']),
-            'message' => 'User updated successfully.',
-        ]);
+        ], 'User updated successfully.');
     }
 
     /**
@@ -142,11 +140,11 @@ class AuthController extends ApiController
     {
         // Optionally prevent admin from deleting themselves
         if (request()->user() && request()->user()->id === $user->id) {
-            return response()->json(['message' => 'You cannot delete yourself.'], 403);
+            return $this->errorResponse('You cannot delete yourself.', 403);
         }
 
         $user->delete();
 
-        return response()->json(['message' => 'User deleted successfully.']);
+        return $this->successResponse(null, 'User deleted successfully.');
     }
 }

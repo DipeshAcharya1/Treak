@@ -46,7 +46,30 @@ abstract class ApiController extends Controller
     protected function authorizeOwner(User $user, Trek $trek): void
     {
         if ($trek->user_id !== $user->id) {
-            abort(response()->json(['message' => 'This resource does not belong to you.'], 403));
+            abort($this->errorResponse('This resource does not belong to you.', 403));
         }
+    }
+
+    /**
+     * Standardized success response.
+     */
+    protected function successResponse($data, string $message = null, int $code = 200)
+    {
+        return response()->json([
+            'status' => 'success',
+            'message' => $message,
+            'data' => $data
+        ], $code);
+    }
+
+    /**
+     * Standardized error response.
+     */
+    protected function errorResponse(string $message, int $code)
+    {
+        return response()->json([
+            'status' => 'error',
+            'message' => $message
+        ], $code);
     }
 }
