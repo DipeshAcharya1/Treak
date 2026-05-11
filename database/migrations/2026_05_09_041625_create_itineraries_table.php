@@ -17,6 +17,8 @@ return new class extends Migration
             $table->integer('day_number');
             $table->string('title');
             $table->text('description')->nullable();
+            $table->string('accommodation')->nullable();
+            $table->string('meals')->nullable();
             $table->timestamps();
         });
     }

@@ -153,4 +153,30 @@ class BookingController extends ApiController
 
         return response()->json(['message' => 'Booking status updated', 'booking' => $booking]);
     }
+
+    /**
+     * Mock payment processing.
+     */
+    public function processPayment(Request $request, $id)
+    {
+        $user = $this->authenticate($request);
+        $booking = $user->bookings()->findOrFail($id);
+
+        $validated = $request->validate([
+            'payment_method' => 'required|string',
+            'transaction_id' => 'required|string',
+        ]);
+
+        $booking->update([
+            'payment_status' => 'paid',
+            'payment_method' => $validated['payment_method'],
+            'transaction_id' => $validated['transaction_id'],
+            'status' => 'confirmed', // Auto-confirm on payment
+        ]);
+
+        return response()->json([
+            'message' => 'Payment processed successfully',
+            'booking' => $booking
+        ]);
+    }
 }

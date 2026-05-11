@@ -19,6 +19,9 @@ return new class extends Migration
             $table->integer('number_of_people')->default(1);
             $table->decimal('total_price', 10, 2);
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
+            $table->enum('payment_status', ['pending', 'paid', 'failed'])->default('pending');
+            $table->string('payment_method')->nullable();
+            $table->string('transaction_id')->nullable();
             $table->timestamps();
         });
     }

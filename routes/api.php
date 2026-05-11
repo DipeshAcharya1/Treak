@@ -45,6 +45,7 @@ Route::middleware('auth.api')->group(function () {
     Route::post('bookings', [\App\Http\Controllers\BookingController::class, 'store']);
     Route::get('bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'show']);
     Route::put('bookings/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancel']);
+    Route::post('bookings/{id}/pay', [\App\Http\Controllers\BookingController::class, 'processPayment']);
 
     // Reviews
     Route::get('treks/{trek}/reviews', [\App\Http\Controllers\ReviewController::class, 'index']);
