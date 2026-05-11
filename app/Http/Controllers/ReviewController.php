@@ -9,7 +9,7 @@ class ReviewController extends ApiController
     public function index($trekId)
     {
         $reviews = \App\Models\Review::where('trek_id', $trekId)->with('user:id,name')->get();
-        return response()->json($reviews);
+        return $this->successResponse($reviews);
     }
 
     public function store(Request $request)
@@ -21,30 +21,30 @@ class ReviewController extends ApiController
             'comment' => 'nullable|string',
         ]);
         $review = $user->reviews()->create($validated);
-        return response()->json($review, 201);
+        return $this->successResponse($review, 'Review submitted successfully', 201);
     }
 
     public function listAll(Request $request)
     {
         $user = $this->authenticate($request);
         if (!$user->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
 
         $reviews = \App\Models\Review::with(['user:id,name', 'trek:id,title'])->get();
-        return response()->json($reviews);
+        return $this->successResponse($reviews);
     }
 
     public function destroy(Request $request, $id)
     {
         $user = $this->authenticate($request);
         if (!$user->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
 
         $review = \App\Models\Review::findOrFail($id);
         $review->delete();
 
-        return response()->json(['message' => 'Review deleted successfully']);
+        return $this->successResponse(null, 'Review deleted successfully');
     }
 }

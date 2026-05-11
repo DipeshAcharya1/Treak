@@ -25,6 +25,10 @@ class BookingController extends ApiController
             'booking_date' => 'required|date|after_or_equal:today',
             'number_of_people' => 'required|integer|min:1',
             'total_price' => 'required|numeric|min:0',
+            'payment_status' => 'nullable|string|in:pending,paid,failed',
+            'payment_method' => 'nullable|string',
+            'transaction_id' => 'nullable|string',
+            'status' => 'nullable|string|in:pending,confirmed,cancelled',
         ]);
 
         $trek = \App\Models\Trek::with('vehicles')->findOrFail($validated['trek_id']);

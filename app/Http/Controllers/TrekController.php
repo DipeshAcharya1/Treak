@@ -16,10 +16,10 @@ class TrekController extends ApiController
         $user = $this->authenticate($request);
 
         if ($user->isAdmin()) {
-            return response()->json(Trek::with(['user:id,name,email', 'guides', 'vehicles'])->get());
+            return $this->successResponse(Trek::with(['user:id,name,email', 'guides', 'vehicles'])->get());
         }
 
-        return response()->json($user->treks()->get());
+        return $this->successResponse($user->treks()->get());
     }
 
     /**
@@ -54,7 +54,7 @@ class TrekController extends ApiController
             $trek->vehicles()->sync($request->vehicle_ids);
         }
 
-        return response()->json($trek, 201);
+        return $this->successResponse($trek, 'Trek created successfully', 201);
     }
 
     /**
@@ -68,7 +68,7 @@ class TrekController extends ApiController
             $this->authorizeOwner($user, $trek);
         }
 
-        return response()->json($trek);
+        return $this->successResponse($trek);
     }
 
     /**
@@ -107,7 +107,7 @@ class TrekController extends ApiController
             $trek->vehicles()->sync($request->vehicle_ids);
         }
 
-        return response()->json($trek);
+        return $this->successResponse($trek, 'Trek updated successfully');
     }
 
     /**
@@ -123,7 +123,7 @@ class TrekController extends ApiController
 
         $trek->delete();
 
-        return response()->json(['message' => 'Trek deleted successfully.']);
+        return $this->successResponse(null, 'Trek deleted successfully.');
     }
 
     /**
@@ -131,7 +131,7 @@ class TrekController extends ApiController
      */
     public function listAll(): JsonResponse
     {
-        return response()->json(Trek::with(['user:id,name', 'guides', 'vehicles'])->get());
+        return $this->successResponse(Trek::with(['user:id,name', 'guides', 'vehicles'])->get());
     }
 
     /**
@@ -139,6 +139,6 @@ class TrekController extends ApiController
      */
     public function showPublic(Trek $trek): JsonResponse
     {
-        return response()->json($trek->load(['itineraries', 'reviews.user:id,name', 'guides', 'vehicles']));
+        return $this->successResponse($trek->load(['itineraries', 'reviews.user:id,name', 'guides', 'vehicles']));
     }
 }

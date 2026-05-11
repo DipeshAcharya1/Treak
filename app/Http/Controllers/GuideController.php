@@ -10,14 +10,14 @@ class GuideController extends ApiController
     public function index(Request $request): JsonResponse
     {
         $guides = \App\Models\Guide::all();
-        return response()->json($guides);
+        return $this->successResponse($guides);
     }
 
     public function store(Request $request): JsonResponse
     {
         $user = $this->authenticate($request);
         if (!$user->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
 
         $validated = $request->validate([
@@ -30,25 +30,25 @@ class GuideController extends ApiController
         ]);
 
         $guide = \App\Models\Guide::create($validated);
-        return response()->json($guide, 201);
+        return $this->successResponse($guide, 'Guide created successfully', 201);
     }
 
     public function show(Request $request, $id): JsonResponse
     {
         $guide = \App\Models\Guide::with('treks')->findOrFail($id);
-        return response()->json($guide);
+        return $this->successResponse($guide);
     }
 
     public function destroy(Request $request, $id): JsonResponse
     {
         $user = $this->authenticate($request);
         if (!$user->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
 
         $guide = \App\Models\Guide::findOrFail($id);
         $guide->delete();
 
-        return response()->json(['message' => 'Guide deleted successfully']);
+        return $this->successResponse(null, 'Guide deleted successfully');
     }
 }

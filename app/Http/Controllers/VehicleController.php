@@ -10,14 +10,14 @@ class VehicleController extends ApiController
     public function index(Request $request): JsonResponse
     {
         $vehicles = \App\Models\Vehicle::all();
-        return response()->json($vehicles);
+        return $this->successResponse($vehicles);
     }
 
     public function store(Request $request): JsonResponse
     {
         $user = $this->authenticate($request);
         if (!$user->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
 
         $validated = $request->validate([
@@ -29,25 +29,25 @@ class VehicleController extends ApiController
         ]);
 
         $vehicle = \App\Models\Vehicle::create($validated);
-        return response()->json($vehicle, 201);
+        return $this->successResponse($vehicle, 'Vehicle created successfully', 201);
     }
 
     public function show(Request $request, $id): JsonResponse
     {
         $vehicle = \App\Models\Vehicle::with('treks')->findOrFail($id);
-        return response()->json($vehicle);
+        return $this->successResponse($vehicle);
     }
 
     public function destroy(Request $request, $id): JsonResponse
     {
         $user = $this->authenticate($request);
         if (!$user->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
 
         $vehicle = \App\Models\Vehicle::findOrFail($id);
         $vehicle->delete();
 
-        return response()->json(['message' => 'Vehicle deleted successfully']);
+        return $this->successResponse(null, 'Vehicle deleted successfully');
     }
 }
